@@ -2,15 +2,17 @@
   "name": "chat-app",
   "version": "1.0.0",
   "description": "Chat application using react and expressjs",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "",
   "license": "MIT",
   "private": "true",
   "workspaces": [
-    "server",
-    "client"
-  ]
+    "packages/*"
+  ],
+  "scripts": {
+    "start:web": "yarn lerna run dev --scope=@smohk/web",
+    "start:server": "yarn lerna run dev --scope=@smohk/server"
+  },
+  "devDependencies": {
+    "lerna": "^7.1.4"
+  }
 }
