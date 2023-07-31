@@ -1,15 +1,23 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import MainRoute from "./navigation/MainRoute";
+import useCurrentUser from "./hooks/useCurrentUser";
+import AuthRoute from "./navigation/AuthRoute";
 
 function App() {
+  const { user } = useCurrentUser();
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="*" element={<MainRoute />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      {user ? (
+        <>
+          <MainRoute />
+        </>
+      ) : (
+        <>
+          <AuthRoute />
+        </>
+      )}
+    </>
   );
 }
-
 export default App;
