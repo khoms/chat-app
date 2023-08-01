@@ -5,13 +5,26 @@ const cookieParser = require("cookie-parser");
 const auth = require("./routes/auth");
 const message = require("./routes/message");
 
-const app = express();
 dotenv.config({ path: "./config/config.env" });
 
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/error");
+
+var cors = require("cors");
+
 //Connect Db
 connectDB();
+const app = express(cors({ origin: "*" }));
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept,Authorization"
+  );
+  res.header("Access-Control-Allow-Methods", "*");
+  next();
+});
 
 app.use(express.json());
 app.use(cookieParser());

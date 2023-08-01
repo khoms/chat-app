@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 
 import App from "./App.tsx";
 import "./index.css";
+
 import { BrowserRouter } from "react-router-dom";
 import store from "./store/index.ts";
 

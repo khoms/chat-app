@@ -6,6 +6,11 @@ export interface User {
   id: string;
 }
 
+export interface LoginCred {
+  email: string;
+  password: string;
+}
+
 export type RootState = ReturnType<typeof store.getState>;
 
 export type AppDispatch = typeof store.dispatch;
