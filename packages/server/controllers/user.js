@@ -14,3 +14,15 @@ exports.getUser = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getUsers = async (req, res, next) => {
+  try {
+    const user = await User.find();
+    if (!user) {
+      return next(new ErrorResponse("User not found."));
+    }
+    res.status(200).json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};

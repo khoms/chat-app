@@ -23,6 +23,7 @@ const useCurrentUser = () => {
 
   // const { entities, ids } = useAppSelector((state) => state.auth);
   const userId = decryptToken(currentToken);
+
   useEffect(() => {
     if (!userId) {
       setLoading(false);
