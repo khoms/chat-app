@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 
 const auth = require("./routes/auth");
 const message = require("./routes/message");
+const user = require("./routes/user");
 
 dotenv.config({ path: "./config/config.env" });
 
@@ -33,6 +34,8 @@ app.use(errorHandler);
 
 app.use("/api/user", auth);
 app.use("/api/message", message);
+app.use("/api/user", user);
+
 
 
 

@@ -1,6 +1,7 @@
 import jwtDecode from "jwt-decode";
-import { useAppSelector } from "../types/User";
+import { User, useAppSelector } from "../types/User";
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 interface DecodedToken {
   id: string;
@@ -15,29 +16,36 @@ const decryptToken = (token: string | null) => {
 };
 
 const useCurrentUser = () => {
-  // const [user, setUser] = useState();
+  const [user, setUser] = useState<User>();
+  const [loading, setLoading] = useState(true);
 
   const currentToken = localStorage.getItem("token");
 
-  const { entities, ids } = useAppSelector((state) => state.auth);
-
+  // const { entities, ids } = useAppSelector((state) => state.auth);
   const userId = decryptToken(currentToken);
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    const fetchData = async () => {
+      // setLoading(true);
+      // try {
+      axios(`http://localhost:3000/api/user/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${currentToken}`,
+        },
+      })
+        .then((res) => setUser(res.data.data))
+        .finally(() => setLoading(false));
+    };
+    fetchData();
+  }, [userId, currentToken]);
 
-  //   useEffect(()=>{
-  // const fetchData = async () => {
-  //       try {
-  //         const response = await fetch(`http://localhost:3000/api/user/${userId}`);
-  //         const jsonData = await response;
-  //         setUser(response.data);
-  //       } catch (error) {
-  //         console.error("Error fetching data:", error);
-  //       }
-  //     };
-  //     fetchData();
-  //   },[userId])
+  console.log(userId);
 
-  const user = entities[ids[0]];
-  return { user };
+  // const user = entities[ids[0]];
+  return { user, userId, currentToken, loading };
 };
 
 export default useCurrentUser;

@@ -7,7 +7,15 @@ const ErrorResponse = require("../utils/errorResponse");
 //check if user is authenticated or not
 
 exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
-  const { token } = req.cookies;
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    // Token not provided
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  // The token is usually sent in the format "Bearer token"
+  const token = authHeader.split(" ")[1] ?? req.cookies;
 
   if (!token) {
     return next(new ErrorResponse("You neeed to log in for this action.", 401));

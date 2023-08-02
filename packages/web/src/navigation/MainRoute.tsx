@@ -1,11 +1,13 @@
 import { Routes, Route } from "react-router-dom";
-import Chat from "../pages/chat/Chat";
+import FriendList from "../pages/Friend";
 
 const MainRoute = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Chat />} />
-    </Routes>
+    <div className="w-full flex">
+      <Routes>
+        <Route path="/" element={<FriendList />} />
+      </Routes>
+    </div>
   );
 };
 
