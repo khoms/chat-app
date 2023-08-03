@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import { User, useAppDispatch, useAppSelector } from "../../types/User";
 import MessageInput from "./Input";
 import getMessageAsync from "../../store/chat/methods/getMessage";
@@ -10,6 +10,8 @@ const Chat = ({ selectedFriend }: { selectedFriend: User }) => {
   const { entities, ids, loading } = useAppSelector((state) => state.message);
   const dispatch = useAppDispatch();
 
+  const scrollRef = useRef<RefObject<HTMLElement>>();
+
   useEffect(() => {
     if (!user?._id || !selectedFriend) {
       return;
@@ -20,6 +22,10 @@ const Chat = ({ selectedFriend }: { selectedFriend: User }) => {
     });
     console.log("inside chat useEffect");
   }, [dispatch, selectedFriend]);
+
+  //   useEffect(()=>{
+  // scrollRef?.current.scrollIntoView({behavior:'smooth'})
+  //   },[entities])
 
   return (
     <div className="h-[100vh] py-8 flex-1 flex flex-col justify-between">
@@ -49,30 +55,40 @@ const Chat = ({ selectedFriend }: { selectedFriend: User }) => {
               const isSender = Boolean(user?._id === message?.senderId);
 
               return (
-                <div
-                  className={`w-full  flex gap-1 ${
-                    isSender ? " flex-row-reverse" : ""
-                  } p-1 my-1 text-white `}
-                  key={id}
-                >
-                  <div className="flex items-center mt-4">
-                    {isSender ? (
-                      <div className="w-6 h-6 bg-[#0084FF] rounded-full"></div>
-                    ) : (
-                      <img
-                        src={selectedFriend.image}
-                        className="w-6 h-6 rounded-full bottom-0"
-                      />
-                    )}
-                  </div>
-                  <div
-                    className={` min-w-[60px] flex justify-center ${
-                      isSender ? "bg-[#0084FF]" : "bg-slate-300 text-black"
-                    } px-4 py-3 rounded-full`}
-                  >
-                    {message?.message.text}
-                  </div>
-                </div>
+                <>
+                  {isSender ? (
+                    <div
+                      ref={scrollRef}
+                      className="w-full  flex gap-1 flex-row-reverse p-1 my-1 text-white "
+                      key={id}
+                    >
+                      <div className="flex items-center mt-4">
+                        <div className="w-6 h-6 bg-[#0084FF] rounded-full"></div>
+                      </div>
+                      <div
+                        className=" min-w-[60px] flex justify-center
+                    bg-[#0084FF] px-4 py-3 rounded-full"
+                      >
+                        {message?.message.text}
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="w-full  flex gap-1 p-1 my-1 text-white "
+                      key={id}
+                    >
+                      <div className="flex items-center mt-4">
+                        <img
+                          src={selectedFriend.image}
+                          className="w-6 h-6 rounded-full bottom-0"
+                        />
+                      </div>
+                      <div className="min-w-[60px] flex justify-center bg-slate-300 text-black px-4 py-3 rounded-full">
+                        {message?.message.text}
+                      </div>
+                    </div>
+                  )}
+                </>
               );
             })}
           </div>
