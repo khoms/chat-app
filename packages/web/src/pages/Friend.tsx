@@ -1,16 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Chat from "./chat/Chat";
 import useCurrentUser from "../hooks/useCurrentUser";
-
-const Friends = [
-  "Hari Bahadur",
-  "Ram Kumar",
-  "Sita Kumari",
-  "Shyam Prasadh",
-  "Radhe Radhe",
-  "Krishna JayShree ",
-  "Om",
-];
+import { User } from "../types/User";
+import axios from "axios";
 
 const Header = () => {
   return (
@@ -26,9 +18,24 @@ const Header = () => {
 };
 
 const FriendList = () => {
-  const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
-  const { user } = useCurrentUser();
-  if (!user) {
+  const [selectedFriend, setSelectedFriend] = useState<User | null>(null);
+  const { user, currentToken } = useCurrentUser();
+  const [FriendsList, setFriendsList] = useState<User[] | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      // setLoading(true);
+      // try {
+      axios(`http://localhost:3000/api/user`, {
+        headers: {
+          Authorization: `Bearer ${currentToken}`,
+        },
+      }).then((res) => setFriendsList(res.data.data));
+    };
+    fetchData();
+  }, []);
+
+  if (!user || !FriendList) {
     return null;
   }
   return (
@@ -49,20 +56,17 @@ const FriendList = () => {
           </span>
         </div>
         {/* Friend List */}
-        {Friends.map((friend, index) => (
+        {FriendsList?.map((friend, index) => (
           <div
-            key={index}
+            key={friend._id}
             onClick={() => setSelectedFriend(friend)}
             className={`flex gap-4 items-center p-2 hover:bg-blue-50 rounded-lg ${
               selectedFriend === friend ? "bg-blue-100" : ""
             }`}
           >
-            <img
-              src="https://t3.ftcdn.net/jpg/03/16/72/68/360_F_316726850_Kp5gHry52XIA0Cedl7b2K1remR1hJ8NU.jpg"
-              className=" h-14 w-14 rounded-full"
-            />
+            <img src={friend.image} className=" h-14 w-14 rounded-full" />
             <div className="flex flex-col gap-1">
-              <div className="font-bold">{friend}</div>
+              <div className="font-bold">{friend.name}</div>
               <div className="">Friends message</div>
             </div>
           </div>

@@ -3,7 +3,8 @@ import store from "../store";
 
 export interface User {
   name: string;
-  id: string;
+  _id: string;
+  image: string;
 }
 
 export interface LoginCred {

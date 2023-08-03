@@ -10,11 +10,11 @@ exports.createMessage = async (req, res, next) => {
       recieverId,
       senderName,
       message: {
-        text: chat,
-        imaeg: "",
+        text: chat.text,
+        image: "",
       },
     });
-    res.status(201).json({ success: true, data: insertChat });
+    res.status(201).json(insertChat);
   } catch (err) {
     next(err);
   }
@@ -22,24 +22,30 @@ exports.createMessage = async (req, res, next) => {
 
 //Route GET/messages
 exports.getMessage = async (req, res, next) => {
-  const myId = req.user._id;
+  const myId = req.user._id.toString();
   const fId = req.params.id;
 
   try {
+    // const filterChat = await message.find({
+    //   $or: [
+    //     { $and: [{ senderId: myId }, { receiverId: fId }] },
+    //     { $and: [{ senderId: fId }, { receiverId: myId }] },
+    //   ],
+    // });
+
     const messages = await message.find({});
 
-    filterChat = messages.filter(
-      (msg) =>
-        (msg.senderId === myId && msg.recieverId === fId) ||
-        msg.recieverId === myId ||
-        msg.senderId === fId
-    );
+    const filterChat = messages.filter((msg) => {
+      // console.log(msg.senderId, myId, "Sender");
+      // console.log(msg.recieverId, fId, "Rcvr");
 
-    res.status(200).json({
-      success: true,
-      count: messages.lenghts,
-      data: messages,
+      return (
+        (msg.senderId === myId && msg.recieverId === fId) ||
+        (msg.recieverId === myId && msg.senderId === fId)
+      );
     });
+
+    res.status(200).json(filterChat);
   } catch (error) {
     res.status(400).json({ success: false });
     console.log(error);

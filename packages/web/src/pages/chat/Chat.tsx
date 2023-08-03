@@ -1,13 +1,32 @@
-const Chat = ({ selectedFriend }: { selectedFriend: string }) => {
+import { useEffect, useState } from "react";
+import { User, useAppDispatch, useAppSelector } from "../../types/User";
+import MessageInput from "./Input";
+import getMessageAsync from "../../store/chat/methods/getMessage";
+import useCurrentUser from "../../hooks/useCurrentUser";
+
+const Chat = ({ selectedFriend }: { selectedFriend: User }) => {
+  const [message, setMessage] = useState<string>("");
+  const { user } = useCurrentUser();
+  const { entities, ids, loading } = useAppSelector((state) => state.message);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!user?._id || !selectedFriend) {
+      return;
+    }
+
+    dispatch(getMessageAsync({ id: selectedFriend._id })).catch((error) => {
+      console.error("Error fetching messages:", error);
+    });
+    console.log("inside chat useEffect");
+  }, [dispatch, selectedFriend]);
+
   return (
     <div className="h-[100vh] py-8 flex-1 flex flex-col justify-between">
       <div className="flex justify-between px-3 shadow-lg py-2 border-l">
         <div className="flex gap-2 items-center">
-          <img
-            src="https://t3.ftcdn.net/jpg/03/16/72/68/360_F_316726850_Kp5gHry52XIA0Cedl7b2K1remR1hJ8NU.jpg"
-            className="h-14 w-14 rounded-full"
-          />
-          <div className="font-bold text-lg">{selectedFriend}</div>
+          <img src={selectedFriend.image} className="h-14 w-14 rounded-full" />
+          <div className="font-bold text-lg">{selectedFriend.name}</div>
         </div>
         <div className="flex gap-2 items-center">
           <div className="p-4 bg-gray-300 rounded-full"></div>
@@ -18,24 +37,53 @@ const Chat = ({ selectedFriend }: { selectedFriend: string }) => {
       </div>
 
       {/* Message section */}
-      <div className="flex justify-center items-center flex-1 border border-1 m-2">
-        this is chat section
+      <div className="flex flex-1 border border-1 m-2 ">
+        {loading ? (
+          <div className="w-full flex justify-center items-center">
+            Loading Message...
+          </div>
+        ) : (
+          <div className="w-full flex-col items-center justify-center m-2">
+            {ids.map((id) => {
+              const message = entities[id];
+              const isSender = Boolean(user?._id === message?.senderId);
+
+              return (
+                <div
+                  className={`w-full  flex gap-1 ${
+                    isSender ? " flex-row-reverse" : ""
+                  } p-1 my-1 text-white `}
+                  key={id}
+                >
+                  <div className="flex items-center mt-4">
+                    {isSender ? (
+                      <div className="w-6 h-6 bg-[#0084FF] rounded-full"></div>
+                    ) : (
+                      <img
+                        src={selectedFriend.image}
+                        className="w-6 h-6 rounded-full bottom-0"
+                      />
+                    )}
+                  </div>
+                  <div
+                    className={` min-w-[60px] flex justify-center ${
+                      isSender ? "bg-[#0084FF]" : "bg-slate-300 text-black"
+                    } px-4 py-3 rounded-full`}
+                  >
+                    {message?.message.text}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
       {/* Footer section */}
-      <div className="flex gap-2 px-2">
-        <div className="flex gap-2 items-center">
-          <div className="p-4 bg-gray-300 rounded-full"></div>
-          <div className="p-4 bg-gray-300 rounded-full"></div>
-
-          <div className="p-4 bg-gray-300 rounded-full"></div>
-        </div>
-        <input
-          type="text"
-          placeholder="Aa"
-          className="border-1 border-gray-500 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 relative bg-slate-200 rounded-3xl text-sm shadow outline-none focus:outline-none focus:ring w-full pl-4"
-        />
-        <div className="p-4 bg-gray-300 rounded-full"></div>
-      </div>
+      <MessageInput
+        setMessage={setMessage}
+        messageText={message}
+        fId={selectedFriend._id}
+      />
     </div>
   );
 };

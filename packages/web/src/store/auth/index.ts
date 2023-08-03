@@ -3,7 +3,7 @@ import { User } from "../../types/User";
 import loginAsync from "./methods/login";
 
 const authAdapter = createEntityAdapter<User>({
-  selectId: (user) => user.id,
+  selectId: (user) => user._id,
 });
 
 const userToken = localStorage.getItem("token");

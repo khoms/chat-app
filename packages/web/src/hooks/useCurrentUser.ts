@@ -25,6 +25,7 @@ const useCurrentUser = () => {
   const userId = decryptToken(currentToken);
 
   useEffect(() => {
+    console.log("we are here");
     if (!userId) {
       setLoading(false);
       return;
@@ -43,7 +44,6 @@ const useCurrentUser = () => {
     fetchData();
   }, [userId, currentToken]);
 
-  console.log(userId);
 
   // const user = entities[ids[0]];
   return { user, userId, currentToken, loading };
