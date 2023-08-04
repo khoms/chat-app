@@ -4,6 +4,7 @@ import useCurrentUser from "../hooks/useCurrentUser";
 import { User } from "../types/User";
 import axios from "axios";
 import { io } from "socket.io-client";
+import ActiveUserList from "./component/ActiveUserList";
 
 const Header = () => {
   return (
@@ -68,7 +69,6 @@ const FriendList = () => {
         );
         console.log(filterUser, "filterUser");
         setActiveUser(filterUser);
-        console.log(users);
       }
     );
   }, []);
@@ -95,25 +95,10 @@ const FriendList = () => {
         </div>
 
         {/* Active Users list */}
-        <div className="flex gap-2">
-          {activeUser &&
-            activeUser.map((aUser) => {
-              return (
-                <div className="flex flex-col items-center">
-                  <img
-                    src={aUser.userInfo.image}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div>
-                    <div className="bg-green-500 p-2 rounded-full absolute mt-[-10px] ml-1"></div>
-                  </div>
-                  <div className="max-w-[50px] overflow-hidden">
-                    {aUser.userInfo.name.split(" ")[0]}
-                  </div>
-                </div>
-              );
-            })}
-        </div>
+        <ActiveUserList
+          activeUser={activeUser}
+          setSelectedFriend={setSelectedFriend}
+        />
 
         {/* Friend List */}
         {FriendsList?.map((friend, index) => (
@@ -133,7 +118,7 @@ const FriendList = () => {
         ))}
       </div>
       {selectedFriend ? (
-        <Chat selectedFriend={selectedFriend} />
+        <Chat selectedFriend={selectedFriend} activeUser={activeUser} />
       ) : (
         <div className="flex-1 flex justify-center items-center">
           {`Hello ${user.name}  Please select any one friend`}

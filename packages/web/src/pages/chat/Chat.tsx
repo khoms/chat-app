@@ -3,14 +3,24 @@ import { User, useAppDispatch, useAppSelector } from "../../types/User";
 import MessageInput from "./Input";
 import getMessageAsync from "../../store/chat/methods/getMessage";
 import useCurrentUser from "../../hooks/useCurrentUser";
+import { ActiveUser } from "../component/ActiveUserList";
+import ActiveIcon from "../component/ActiveIcon";
 
-const Chat = ({ selectedFriend }: { selectedFriend: User }) => {
+const Chat = ({
+  selectedFriend,
+  activeUser,
+}: {
+  selectedFriend: User;
+  activeUser: ActiveUser[];
+}) => {
   const [message, setMessage] = useState<string>("");
   const { user } = useCurrentUser();
   const { entities, ids, loading } = useAppSelector((state) => state.message);
   const dispatch = useAppDispatch();
 
   const scrollRef = useRef<RefObject<HTMLElement>>();
+
+  const isActive = activeUser.find((u) => u.userId === selectedFriend._id);
 
   useEffect(() => {
     if (!user?._id || !selectedFriend) {
@@ -30,7 +40,13 @@ const Chat = ({ selectedFriend }: { selectedFriend: User }) => {
     <div className="h-[100vh] py-8 flex-1 flex flex-col justify-between">
       <div className="flex justify-between px-3 shadow-lg py-2 border-l">
         <div className="flex gap-2 items-center">
-          <img src={selectedFriend.image} className="h-14 w-14 rounded-full" />
+          <div>
+            <img
+              src={selectedFriend.image}
+              className="h-14 w-14 rounded-full"
+            />
+            {isActive && <ActiveIcon />}
+          </div>
           <div className="font-bold text-lg">{selectedFriend.name}</div>
         </div>
         <div className="flex gap-2 items-center">
