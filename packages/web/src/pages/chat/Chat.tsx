@@ -20,7 +20,6 @@ const Chat = ({ selectedFriend }: { selectedFriend: User }) => {
     dispatch(getMessageAsync({ id: selectedFriend._id })).catch((error) => {
       console.error("Error fetching messages:", error);
     });
-    console.log("inside chat useEffect");
   }, [dispatch, selectedFriend]);
 
   //   useEffect(()=>{
@@ -55,7 +54,7 @@ const Chat = ({ selectedFriend }: { selectedFriend: User }) => {
               const isSender = Boolean(user?._id === message?.senderId);
 
               return (
-                <>
+                <div key={id}>
                   {isSender ? (
                     <div
                       ref={scrollRef}
@@ -88,7 +87,7 @@ const Chat = ({ selectedFriend }: { selectedFriend: User }) => {
                       </div>
                     </div>
                   )}
-                </>
+                </div>
               );
             })}
           </div>

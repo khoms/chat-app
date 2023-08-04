@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "start:web": "yarn lerna run dev --scope=@smohk/web",
-    "start:server": "yarn lerna run dev --scope=@smohk/server"
+    "start:server": "yarn lerna run dev --scope=@smohk/server",
+    "start:socket": "yarn lerna run dev --scope=@smohk/socket"
   },
   "devDependencies": {
     "lerna": "^7.1.4"

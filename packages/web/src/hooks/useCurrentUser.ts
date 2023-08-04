@@ -1,6 +1,6 @@
 import jwtDecode from "jwt-decode";
 import { User, useAppSelector } from "../types/User";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 
 interface DecodedToken {
@@ -22,10 +22,11 @@ const useCurrentUser = () => {
   const currentToken = localStorage.getItem("token");
 
   // const { entities, ids } = useAppSelector((state) => state.auth);
-  const userId = decryptToken(currentToken);
+  const userId = useMemo(() => {
+    return decryptToken(currentToken);
+  }, [currentToken]);
 
   useEffect(() => {
-    console.log("we are here");
     if (!userId) {
       setLoading(false);
       return;
@@ -42,8 +43,7 @@ const useCurrentUser = () => {
         .finally(() => setLoading(false));
     };
     fetchData();
-  }, [userId, currentToken]);
-
+  }, [userId]);
 
   // const user = entities[ids[0]];
   return { user, userId, currentToken, loading };

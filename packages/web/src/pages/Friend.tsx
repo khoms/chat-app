@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Chat from "./chat/Chat";
 import useCurrentUser from "../hooks/useCurrentUser";
 import { User } from "../types/User";
 import axios from "axios";
+import { io } from "socket.io-client";
 
 const Header = () => {
   return (
@@ -18,9 +19,14 @@ const Header = () => {
 };
 
 const FriendList = () => {
-  const [selectedFriend, setSelectedFriend] = useState<User | null>(null);
   const { user, currentToken } = useCurrentUser();
-  const [FriendsList, setFriendsList] = useState<User[] | null>(null);
+  const [FriendsList, setFriendsList] = useState<User[]>([]);
+  const [selectedFriend, setSelectedFriend] = useState<User | null>(null);
+  const [activeUser, setActiveUser] = useState([]);
+
+  console.log(activeUser);
+
+  const socketRef = useRef();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,6 +39,38 @@ const FriendList = () => {
       }).then((res) => setFriendsList(res.data.data));
     };
     fetchData();
+  }, []);
+  useEffect(() => {
+    setSelectedFriend(FriendsList[0] ?? null);
+  }, [FriendsList]);
+
+  useEffect(() => {
+    socketRef.current = io("ws://localhost:8000");
+  }, []);
+
+  useEffect(() => {
+    socketRef.current.emit("adduser", user?._id, user);
+  }, [user]);
+
+  useEffect(() => {
+    socketRef.current.on(
+      "getUser",
+      (
+        users
+        //   {
+        //   users,
+        // }: {
+        //   users: { userId: string; socketId: string; userInfo: User };
+        // }
+      ) => {
+        const filterUser = users.filter(
+          (u) => u.userId !== user?._id.toString()
+        );
+        console.log(filterUser, "filterUser");
+        setActiveUser(filterUser);
+        console.log(users);
+      }
+    );
   }, []);
 
   if (!user || !FriendList) {
@@ -55,6 +93,28 @@ const FriendList = () => {
             Group
           </span>
         </div>
+
+        {/* Active Users list */}
+        <div className="flex gap-2">
+          {activeUser &&
+            activeUser.map((aUser) => {
+              return (
+                <div className="flex flex-col items-center">
+                  <img
+                    src={aUser.userInfo.image}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div>
+                    <div className="bg-green-500 p-2 rounded-full absolute mt-[-10px] ml-1"></div>
+                  </div>
+                  <div className="max-w-[50px] overflow-hidden">
+                    {aUser.userInfo.name.split(" ")[0]}
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+
         {/* Friend List */}
         {FriendsList?.map((friend, index) => (
           <div
