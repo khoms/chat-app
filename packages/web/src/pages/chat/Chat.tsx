@@ -5,20 +5,23 @@ import getMessageAsync from "../../store/chat/methods/getMessage";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { ActiveUser } from "../component/ActiveUserList";
 import ActiveIcon from "../component/ActiveIcon";
+import { Socket } from "socket.io-client";
 
 const Chat = ({
   selectedFriend,
   activeUser,
+  socketRef,
 }: {
   selectedFriend: User;
   activeUser: ActiveUser[];
+  socketRef: React.MutableRefObject<Socket>;
 }) => {
   const [message, setMessage] = useState<string>("");
   const { user } = useCurrentUser();
   const { entities, ids, loading } = useAppSelector((state) => state.message);
   const dispatch = useAppDispatch();
 
-  const scrollRef = useRef<RefObject<HTMLElement>>();
+  const scrollRef = useRef<HTMLElement>(null);
 
   const isActive = activeUser.find((u) => u.userId === selectedFriend._id);
 
@@ -32,12 +35,12 @@ const Chat = ({
     });
   }, [dispatch, selectedFriend]);
 
-  //   useEffect(()=>{
-  // scrollRef?.current.scrollIntoView({behavior:'smooth'})
-  //   },[entities])
+  useEffect(() => {
+    scrollRef?.current?.scrollIntoView({ behavior: "auto" });
+  }, [entities]);
 
   return (
-    <div className="h-[100vh] py-8 flex-1 flex flex-col justify-between">
+    <div className=" py-8 flex-1 flex flex-col justify-between overflow-y-scroll">
       <div className="flex justify-between px-3 shadow-lg py-2 border-l">
         <div className="flex gap-2 items-center">
           <div>
@@ -58,13 +61,13 @@ const Chat = ({
       </div>
 
       {/* Message section */}
-      <div className="flex flex-1 border border-1 m-2 ">
+      <div className=" flex flex-1 border border-1 m-2 ">
         {loading ? (
           <div className="w-full flex justify-center items-center">
             Loading Message...
           </div>
         ) : (
-          <div className="w-full flex-col items-center justify-center m-2">
+          <div className="w-full h-[75vh] overflow-scroll flex-col items-center justify-center m-2">
             {ids.map((id) => {
               const message = entities[id];
               const isSender = Boolean(user?._id === message?.senderId);
@@ -99,7 +102,7 @@ const Chat = ({
                         />
                       </div>
                       <div className="min-w-[60px] flex justify-center bg-slate-300 text-black px-4 py-3 rounded-full">
-                        {message?.message.text}
+                        {message?.message?.text}
                       </div>
                     </div>
                   )}
@@ -114,6 +117,8 @@ const Chat = ({
         setMessage={setMessage}
         messageText={message}
         fId={selectedFriend._id}
+        socketRef={socketRef}
+        selectedFriend={selectedFriend}
       />
     </div>
   );

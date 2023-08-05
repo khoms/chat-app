@@ -2,6 +2,7 @@ import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { Message } from "../../types/Message";
 import createMessageAsync from "./methods/createMessage";
 import getMessageAsync from "./methods/getMessage";
+import addMessageAsync from "./methods/addMessage";
 
 const messageAdapter = createEntityAdapter<Message>({
   selectId: (message) => message._id,
@@ -31,6 +32,21 @@ const message = createSlice({
     });
 
     builder.addCase(createMessageAsync.pending, (state, { meta }) => {
+      state.status[meta.requestId] = "working";
+      state.loading = true;
+    });
+
+    builder.addCase(addMessageAsync.fulfilled, (state, { payload }) => {
+      messageAdapter.upsertOne(state, payload);
+      state.loading = false;
+    });
+
+    builder.addCase(addMessageAsync.rejected, (state, { error }) => {
+      console.log(error);
+      state.loading = false;
+    });
+
+    builder.addCase(addMessageAsync.pending, (state, { meta }) => {
       state.status[meta.requestId] = "working";
       state.loading = true;
     });

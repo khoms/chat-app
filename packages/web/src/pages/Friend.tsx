@@ -1,10 +1,14 @@
 import { useEffect, useState, useRef } from "react";
 import Chat from "./chat/Chat";
 import useCurrentUser from "../hooks/useCurrentUser";
-import { User } from "../types/User";
+import { User, useAppDispatch } from "../types/User";
 import axios from "axios";
-import { io } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
 import ActiveUserList from "./component/ActiveUserList";
+import createMessageAsync from "../store/chat/methods/createMessage";
+import { Message } from "../types/Message";
+import getMessageAsync from "../store/chat/methods/getMessage";
+import addMessageAsync from "../store/chat/methods/addMessage";
 
 const Header = () => {
   return (
@@ -22,12 +26,13 @@ const Header = () => {
 const FriendList = () => {
   const { user, currentToken } = useCurrentUser();
   const [FriendsList, setFriendsList] = useState<User[]>([]);
+  const [socketMessage, setSocketMessage] = useState<Message>();
   const [selectedFriend, setSelectedFriend] = useState<User | null>(null);
   const [activeUser, setActiveUser] = useState([]);
+  const dispatch = useAppDispatch();
+  console.log(socketMessage);
 
-  console.log(activeUser);
-
-  const socketRef = useRef();
+  const socketRef = useRef<React.MutableRefObject<Socket>>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,13 +46,29 @@ const FriendList = () => {
     };
     fetchData();
   }, []);
+
   useEffect(() => {
-    setSelectedFriend(FriendsList[0] ?? null);
+    setSelectedFriend(FriendsList[0]);
   }, [FriendsList]);
 
   useEffect(() => {
     socketRef.current = io("ws://localhost:8000");
+    socketRef.current.on("getMessage", (data: Message) => {
+      setSocketMessage(data);
+    });
   }, []);
+
+  useEffect(() => {
+    if (socketMessage && selectedFriend) {
+      if (
+        socketMessage.senderId === selectedFriend._id &&
+        socketMessage.recieverId === user?._id
+      ) {
+        // dispatch(getMessageAsync(socketMessage.senderId));
+        dispatch(addMessageAsync(socketMessage));
+      }
+    }
+  }, [socketMessage]);
 
   useEffect(() => {
     socketRef.current.emit("adduser", user?._id, user);
@@ -77,7 +98,7 @@ const FriendList = () => {
     return null;
   }
   return (
-    <div className="flex flex-1 gap-2">
+    <div className="flex flex-1 gap-2 ">
       <div className="w-[320px] px-4 py-8 flex flex-col gap-3 cursor-pointer ">
         <Header />
         <input
@@ -118,7 +139,11 @@ const FriendList = () => {
         ))}
       </div>
       {selectedFriend ? (
-        <Chat selectedFriend={selectedFriend} activeUser={activeUser} />
+        <Chat
+          selectedFriend={selectedFriend}
+          activeUser={activeUser}
+          socketRef={socketRef}
+        />
       ) : (
         <div className="flex-1 flex justify-center items-center">
           {`Hello ${user.name}  Please select any one friend`}

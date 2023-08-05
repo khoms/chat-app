@@ -1,45 +1,46 @@
-import axios from "axios";
-import useCurrentUser from "../../hooks/useCurrentUser";
-import { useAppDispatch } from "../../types/User";
+import { useEffect, useState } from "react";
+import { User, useAppDispatch } from "../../types/User";
 import createMessageAsync from "../../store/chat/methods/createMessage";
 import { Message } from "../../types/Message";
 import createUniqueId from "../../utils/createUid";
+
+import useCurrentUser from "../../hooks/useCurrentUser";
+import { Socket } from "socket.io-client";
+import { IoMdSend } from "react-icons/io";
 
 const MessageInput = ({
   setMessage,
   messageText,
   fId,
+  socketRef,
 }: {
   setMessage: React.Dispatch<React.SetStateAction<string>>;
   messageText: string;
   fId: string;
+  socketRef: React.MutableRefObject<Socket>;
+  selectedFriend: User;
 }) => {
+  const { user } = useCurrentUser();
   const dispatch = useAppDispatch();
 
-  // const sendData = { senderName: "My nAme", recieverId: fId, chat: message };
-  //   try {
-  //     axios.post(`http://localhost:3000/api/message`, sendData, {
-  //       headers: {
-  //         Authorization: `Bearer ${currentToken}`,
-  //       },
-  //     });
-  //   } catch (err) {
-  //     console.log(err);
-  //   } finally {
-  //     setMessage(null);
-  //   }
   const onSendHandler = async () => {
     const sendData: Message = {
       _id: createUniqueId(),
       recieverId: fId,
-      chat: { text: messageText },
+      chat: { text: messageText ?? "❤️" },
     };
-    console.log(sendData);
+
+    socketRef.current.emit("sendMessage", {
+      ...sendData,
+      senderId: user?._id,
+    });
+    setMessage("");
+
     await dispatch(createMessageAsync(sendData));
   };
 
   return (
-    <div className="flex gap-2 px-2">
+    <div className="flex gap-2 px-2 items-center">
       <div className="flex gap-2 items-center">
         <div className="p-4 bg-gray-300 rounded-full"></div>
         <div className="p-4 bg-gray-300 rounded-full"></div>
@@ -54,10 +55,10 @@ const MessageInput = ({
         onChange={(e) => setMessage(e.target.value)}
       />
       <div
-        className="p-4 bg-gray-300 rounded-full cursor-pointer"
+        className="pr-2 rounded-full cursor-pointer text-[#0084FF] text-[26px]"
         onClick={onSendHandler}
       >
-        Send
+        {messageText ? <IoMdSend /> : "❤️"}
       </div>
     </div>
   );
