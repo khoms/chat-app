@@ -1,11 +1,11 @@
-import { RefObject, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { User, useAppDispatch, useAppSelector } from "../../types/User";
 import MessageInput from "./Input";
 import getMessageAsync from "../../store/chat/methods/getMessage";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { ActiveUser } from "../component/ActiveUserList";
-import ActiveIcon from "../component/ActiveIcon";
 import { Socket } from "socket.io-client";
+import ChatHeader from "./component/ChatHeader";
 
 const Chat = ({
   selectedFriend,
@@ -41,29 +41,16 @@ const Chat = ({
 
   return (
     <div className=" py-8 flex-1 flex flex-col justify-between overflow-y-scroll">
-      <div className="flex justify-between px-3 shadow-lg py-2 border-l">
-        <div className="flex gap-2 items-center">
-          <div>
-            <img
-              src={selectedFriend.image}
-              className="h-14 w-14 rounded-full"
-            />
-            {isActive && <ActiveIcon />}
-          </div>
-          <div className="font-bold text-lg">{selectedFriend.name}</div>
-        </div>
-        <div className="flex gap-2 items-center">
-          <div className="p-4 bg-gray-300 rounded-full"></div>
-          <div className="p-4 bg-gray-300 rounded-full"></div>
-
-          <div className="p-4 bg-gray-300 rounded-full"></div>
-        </div>
-      </div>
+      <ChatHeader
+        image={selectedFriend.image}
+        name={selectedFriend.name}
+        isActive={Boolean(isActive)}
+      />
 
       {/* Message section */}
       <div className=" flex flex-1 border border-1 m-2 ">
         {loading ? (
-          <div className="w-full flex justify-center items-center">
+          <div className="w-full h-[75vh] flex justify-center items-center">
             Loading Message...
           </div>
         ) : (

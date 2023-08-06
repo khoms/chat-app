@@ -5,19 +5,27 @@ import { User, useAppDispatch } from "../types/User";
 import axios from "axios";
 import { Socket, io } from "socket.io-client";
 import ActiveUserList from "./component/ActiveUserList";
-import createMessageAsync from "../store/chat/methods/createMessage";
 import { Message } from "../types/Message";
-import getMessageAsync from "../store/chat/methods/getMessage";
 import addMessageAsync from "../store/chat/methods/addMessage";
+import { RiVideoAddFill } from "react-icons/ri";
+import { BsThreeDots } from "react-icons/bs";
+
+import { FiEdit } from "react-icons/fi";
 
 const Header = () => {
   return (
     <div className="flex justify-between w-full">
       <div className="font-bold text-lg">Chats</div>
       <div className="flex space-between gap-2">
-        <div className="p-3 bg-gray-400 rounded-full"></div>
-        <div className="p-3 bg-gray-400 rounded-full"></div>
-        <div className="p-3 bg-gray-400 rounded-full"></div>
+        <div className="p-2 bg-gray-200 rounded-full text-lg">
+          <BsThreeDots />
+        </div>
+        <div className="p-2 bg-gray-200 rounded-full text-lg">
+          <RiVideoAddFill />
+        </div>
+        <div className="p-2 bg-gray-200 rounded-full text-lg">
+          <FiEdit />
+        </div>
       </div>
     </div>
   );
