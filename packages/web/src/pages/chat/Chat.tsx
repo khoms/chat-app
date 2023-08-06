@@ -7,14 +7,40 @@ import { ActiveUser } from "../component/ActiveUserList";
 import { Socket } from "socket.io-client";
 import ChatHeader from "./component/ChatHeader";
 
+
+const FriendSideMessage = ({
+  image,
+  message,
+}: {
+  image: string;
+  message: string;
+}) => {
+  return (
+    <div className="w-full  flex gap-1 items-center p-1 my-1 text-white ">
+      <div className="flex items-center mt-4">
+        <img src={image} className="w-6 h-6 rounded-full" />
+      </div>
+      <div
+        className={`min-w-[60px] flex justify-center ${
+          message !== "typing..." ? "bg-slate-300" : "bg-slate-100"
+        } text-black px-4 py-3 rounded-full`}
+      >
+        {message}
+      </div>
+    </div>
+  );
+};
+
 const Chat = ({
   selectedFriend,
   activeUser,
   socketRef,
+  isTyping,
 }: {
   selectedFriend: User;
   activeUser: ActiveUser[];
   socketRef: React.MutableRefObject<Socket>;
+  isTyping: Boolean;
 }) => {
   const [message, setMessage] = useState<string>("");
   const { user } = useCurrentUser();
@@ -38,6 +64,8 @@ const Chat = ({
   useEffect(() => {
     scrollRef?.current?.scrollIntoView({ behavior: "auto" });
   }, [entities]);
+
+  console.log(isTyping), "Chat page";
 
   return (
     <div className=" py-8 flex-1 flex flex-col justify-between overflow-y-scroll">
@@ -78,24 +106,21 @@ const Chat = ({
                       </div>
                     </div>
                   ) : (
-                    <div
-                      className="w-full  flex gap-1 p-1 my-1 text-white "
+                    <FriendSideMessage
                       key={id}
-                    >
-                      <div className="flex items-center mt-4">
-                        <img
-                          src={selectedFriend.image}
-                          className="w-6 h-6 rounded-full bottom-0"
-                        />
-                      </div>
-                      <div className="min-w-[60px] flex justify-center bg-slate-300 text-black px-4 py-3 rounded-full">
-                        {message?.message?.text}
-                      </div>
-                    </div>
+                      image={selectedFriend.image}
+                      message={message?.message?.text}
+                    />
                   )}
                 </div>
               );
             })}
+            {isTyping && (
+              <FriendSideMessage
+                message="typing..."
+                image={selectedFriend.image}
+              />
+            )}
           </div>
         )}
       </div>

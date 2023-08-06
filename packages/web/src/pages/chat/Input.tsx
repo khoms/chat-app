@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ChangeEvent } from "react";
 import { User, useAppDispatch } from "../../types/User";
 import createMessageAsync from "../../store/chat/methods/createMessage";
 import { Message } from "../../types/Message";
@@ -33,10 +33,27 @@ const MessageInput = ({
     socketRef.current.emit("sendMessage", {
       ...sendData,
       senderId: user?._id,
+      senderName: user?.name,
     });
     setMessage("");
 
     await dispatch(createMessageAsync(sendData));
+
+    socketRef.current.emit("typingMessage", {
+      senderId: user?._id,
+      recieverId: fId,
+      message: "",
+    });
+  };
+
+  const inputHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    setMessage(e.target.value);
+
+    socketRef.current.emit("typingMessage", {
+      senderId: user?._id,
+      recieverId: fId,
+      message: e.target.value,
+    });
   };
 
   return (
@@ -52,7 +69,7 @@ const MessageInput = ({
         value={messageText}
         placeholder="Aa"
         className="border-1 border-gray-500 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 relative bg-slate-200 rounded-3xl text-sm shadow outline-none focus:outline-none focus:ring w-full pl-4"
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={inputHandler}
       />
       <div
         className="pr-2 rounded-full cursor-pointer text-[#0084FF] text-[26px]"

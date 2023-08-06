@@ -11,6 +11,7 @@ import { RiVideoAddFill } from "react-icons/ri";
 import { BsThreeDots } from "react-icons/bs";
 
 import { FiEdit } from "react-icons/fi";
+import toast, { Toaster } from "react-hot-toast";
 
 const Header = () => {
   return (
@@ -37,8 +38,8 @@ const FriendList = () => {
   const [socketMessage, setSocketMessage] = useState<Message>();
   const [selectedFriend, setSelectedFriend] = useState<User | null>(null);
   const [activeUser, setActiveUser] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
   const dispatch = useAppDispatch();
-  console.log(socketMessage);
 
   const socketRef = useRef<React.MutableRefObject<Socket>>();
 
@@ -64,6 +65,10 @@ const FriendList = () => {
     socketRef.current.on("getMessage", (data: Message) => {
       setSocketMessage(data);
     });
+
+    socketRef.current.on("typingMessageGet", (data) => {
+      setIsTyping(Boolean(data.message));
+    });
   }, []);
 
   useEffect(() => {
@@ -72,8 +77,18 @@ const FriendList = () => {
         socketMessage.senderId === selectedFriend._id &&
         socketMessage.recieverId === user?._id
       ) {
-        // dispatch(getMessageAsync(socketMessage.senderId));
         dispatch(addMessageAsync(socketMessage));
+      }
+    }
+  }, [socketMessage]);
+
+  useEffect(() => {
+    if (socketMessage) {
+      if (
+        socketMessage.senderId !== selectedFriend?._id &&
+        socketMessage.recieverId === user?._id
+      ) {
+        toast.success(`${socketMessage.senderName} send a New Message`);
       }
     }
   }, [socketMessage]);
@@ -83,23 +98,11 @@ const FriendList = () => {
   }, [user]);
 
   useEffect(() => {
-    socketRef.current.on(
-      "getUser",
-      (
-        users
-        //   {
-        //   users,
-        // }: {
-        //   users: { userId: string; socketId: string; userInfo: User };
-        // }
-      ) => {
-        const filterUser = users.filter(
-          (u) => u.userId !== user?._id.toString()
-        );
-        console.log(filterUser, "filterUser");
-        setActiveUser(filterUser);
-      }
-    );
+    socketRef.current.on("getUser", (users) => {
+      const filterUser = users.filter((u) => u.userId !== user?._id.toString());
+      console.log(filterUser, "filterUser");
+      setActiveUser(filterUser);
+    });
   }, []);
 
   if (!user || !FriendList) {
@@ -107,6 +110,16 @@ const FriendList = () => {
   }
   return (
     <div className="flex flex-1 gap-2 ">
+      <Toaster
+        position={"top-right"}
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            fontSize: "18px",
+          },
+        }}
+      />
       <div className="w-[320px] px-4 py-8 flex flex-col gap-3 cursor-pointer ">
         <Header />
         <input
@@ -151,6 +164,7 @@ const FriendList = () => {
           selectedFriend={selectedFriend}
           activeUser={activeUser}
           socketRef={socketRef}
+          isTyping={isTyping}
         />
       ) : (
         <div className="flex-1 flex justify-center items-center">

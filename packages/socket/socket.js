@@ -41,6 +41,18 @@ io.on("connection", (socket) => {
         senderId: data.senderId,
         recieverId: data.recieverId,
         message: { text: data.chat.text },
+        senderName: data.senderName,
+      });
+    }
+  });
+
+  socket.on("typingMessage", (data) => {
+    const user = findUser(data.recieverId);
+    if (user !== undefined) {
+      socket.to(user.socketId).emit("typingMessageGet", {
+        senderId: data.senderId,
+        recieverId: data.recieverId,
+        message: data.message,
       });
     }
   });
