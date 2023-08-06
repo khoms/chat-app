@@ -27,25 +27,25 @@ exports.getMessage = async (req, res, next) => {
 
   try {
     // const filterChat = await message.find({
-    //   $or: [
-    //     { $and: [{ senderId: myId }, { receiverId: fId }] },
-    //     { $and: [{ senderId: fId }, { receiverId: myId }] },
-    //   ],
+
     // });
 
-    const messages = await message.find({});
-
-    const filterChat = messages.filter((msg) => {
-      // console.log(msg.senderId, myId, "Sender");
-      // console.log(msg.recieverId, fId, "Rcvr");
-
-      return (
-        (msg.senderId === myId && msg.recieverId === fId) ||
-        (msg.recieverId === myId && msg.senderId === fId)
-      );
+    const messages = await message.find({
+      $or: [
+        { $and: [{ senderId: myId }, { receiverId: fId }] },
+        { $and: [{ senderId: fId }, { receiverId: myId }] },
+      ],
     });
 
-    res.status(200).json(filterChat);
+    // const filterChat = messages.filter((msg) => {
+
+    //   return (
+    //     (msg.senderId === myId && msg.recieverId === fId) ||
+    //     (msg.recieverId === myId && msg.senderId === fId)
+    //   );
+    // });
+
+    res.status(200).json(messages);
   } catch (error) {
     res.status(400).json({ success: false });
     console.log(error);
