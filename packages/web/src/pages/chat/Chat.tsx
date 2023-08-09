@@ -65,7 +65,6 @@ const Chat = ({
     scrollRef?.current?.scrollIntoView({ behavior: "auto" });
   }, [entities]);
 
-  console.log(isTyping), "Chat page";
 
   return (
     <div className=" py-8 flex-1 flex flex-col justify-between overflow-y-scroll">
@@ -109,7 +108,7 @@ const Chat = ({
                     <FriendSideMessage
                       key={id}
                       image={selectedFriend.image}
-                      message={message?.message?.text}
+                      message={message?.message?.text ?? ""}
                     />
                   )}
                 </div>

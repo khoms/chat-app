@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import Chat from "./chat/Chat";
 import useCurrentUser from "../hooks/useCurrentUser";
-import { User, useAppDispatch } from "../types/User";
+import { User, useAppDispatch, useAppSelector } from "../types/User";
 import axios from "axios";
 import { Socket, io } from "socket.io-client";
 import ActiveUserList from "./component/ActiveUserList";
@@ -46,6 +46,10 @@ const FriendList = () => {
   const [isTyping, setIsTyping] = useState(false);
   const dispatch = useAppDispatch();
 
+  const { entities, messageSendSuccess, ids } = useAppSelector(
+    (state) => state.message
+  );
+
   const socketRef = useRef<React.MutableRefObject<Socket>>();
 
   console.log(friendsList);
@@ -70,6 +74,7 @@ const FriendList = () => {
   useEffect(() => {
     socketRef.current = io("ws://localhost:8000");
     socketRef.current.on("getMessage", (data: Message) => {
+      console.log(data, "SocketMessage check");
       setSocketMessage(data);
     });
 
@@ -77,6 +82,12 @@ const FriendList = () => {
       setIsTyping(Boolean(data.message));
     });
   }, []);
+
+  useEffect(() => {
+    if (messageSendSuccess) {
+      socketRef.current.emit("sendMessage", entities[ids[ids.length - 1]]);
+    }
+  }, [messageSendSuccess]);
 
   useEffect(() => {
     if (socketMessage && selectedFriend) {
@@ -95,7 +106,9 @@ const FriendList = () => {
         socketMessage.senderId !== selectedFriend?._id &&
         socketMessage.recieverId === user?._id
       ) {
-        toast.success(`${socketMessage.senderName} send a New Message`);
+        toast.success(
+          `${socketMessage.senderName ?? "SomeOne"} send a New Message`
+        );
       }
     }
   }, [socketMessage]);
@@ -171,7 +184,9 @@ const FriendList = () => {
                     : selectedFriend?.name.split(" ")[0]}
                   : {friend.msgInfo.message.text.slice(0, 16)}
                 </div>
-                <div className="bg-[#0084FF] h-3 w-3 rounded-full"></div>
+                {friend.msgInfo.status !== "unseen" && (
+                  <div className="bg-[#0084FF] h-3 w-3 rounded-full"></div>
+                )}
               </div>
             </div>
           </div>

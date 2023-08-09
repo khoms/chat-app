@@ -11,9 +11,11 @@ const messageAdapter = createEntityAdapter<Message>({
 const messageInitial = messageAdapter.getInitialState<{
   status: Record<string, "working" | undefined>;
   loading: boolean;
+  messageSendSuccess: boolean;
 }>({
   status: {},
   loading: true,
+  messageSendSuccess: false,
 });
 
 const message = createSlice({
@@ -24,16 +26,19 @@ const message = createSlice({
     builder.addCase(createMessageAsync.fulfilled, (state, { payload }) => {
       messageAdapter.setOne(state, payload);
       state.loading = false;
+      state.messageSendSuccess = true;
     });
 
     builder.addCase(createMessageAsync.rejected, (state, { error }) => {
       console.log(error);
       state.loading = false;
+      state.messageSendSuccess = false;
     });
 
     builder.addCase(createMessageAsync.pending, (state, { meta }) => {
       state.status[meta.requestId] = "working";
       state.loading = true;
+      state.messageSendSuccess = false;
     });
 
     builder.addCase(addMessageAsync.fulfilled, (state, { payload }) => {

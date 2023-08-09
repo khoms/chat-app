@@ -27,17 +27,17 @@ const MessageInput = ({
     const sendData: Message = {
       _id: createUniqueId(),
       recieverId: fId,
-      chat: { text: messageText ?? "❤️" },
+      message: { text: messageText ?? "❤️" },
     };
 
-    socketRef.current.emit("sendMessage", {
-      ...sendData,
-      senderId: user?._id,
-      senderName: user?.name,
-    });
-    setMessage("");
-
     await dispatch(createMessageAsync(sendData));
+
+    // socketRef.current.emit("sendMessage", {
+    //   ...sendData,
+    //   senderId: user?._id,
+    //   senderName: user?.name,
+    // });
+    setMessage("");
 
     socketRef.current.emit("typingMessage", {
       senderId: user?._id,

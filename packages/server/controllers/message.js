@@ -1,16 +1,16 @@
-const message = require("../models/message");
+const Message = require("../models/message");
 
 //Route to create messages
 exports.createMessage = async (req, res, next) => {
   const myId = req.user._id;
-  const { senderName, recieverId, chat } = req.body;
+  const { senderName, recieverId, message } = req.body;
   try {
-    const insertChat = await message.create({
+    const insertChat = await Message.create({
       senderId: myId,
       recieverId,
       senderName,
       message: {
-        text: chat.text,
+        text: message.text,
         image: "",
       },
     });
@@ -30,7 +30,7 @@ exports.getMessage = async (req, res, next) => {
 
     // });
 
-    const messages = await message.find({
+    const messages = await Message.find({
       $or: [
         {
           $and: [
@@ -68,37 +68,35 @@ exports.getMessage = async (req, res, next) => {
 };
 
 exports.getLastMessage = async (myId, fId) => {
-  const msg = await message
-    .find({
-      $or: [
-        {
-          $and: [
-            {
-              senderId: {
-                $eq: myId,
-              },
+  const msg = await Message.find({
+    $or: [
+      {
+        $and: [
+          {
+            senderId: {
+              $eq: myId,
             },
-            {
-              recieverId: {
-                $eq: fId,
-              },
+          },
+          {
+            recieverId: {
+              $eq: fId,
             },
-          ],
-        },
+          },
+        ],
+      },
 
-        {
-          $and: [
-            {
-              senderId: {
-                $eq: fId,
-              },
+      {
+        $and: [
+          {
+            senderId: {
+              $eq: fId,
             },
-            { recieverId: { $eq: myId } },
-          ],
-        },
-      ],
-    })
-    .sort({ updatedAt: -1 });
+          },
+          { recieverId: { $eq: myId } },
+        ],
+      },
+    ],
+  }).sort({ updatedAt: -1 });
 
   return msg[0];
 };

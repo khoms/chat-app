@@ -33,21 +33,17 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendMessage", (data) => {
+    if (!data) {
+      return null;
+    }
     const user = findUser(data.recieverId);
-
     if (user !== undefined) {
-      socket.to(user.socketId).emit("getMessage", {
-        _id: data._id,
-        senderId: data.senderId,
-        recieverId: data.recieverId,
-        message: { text: data.chat.text },
-        senderName: data.senderName,
-      });
+      socket.to(user.socketId).emit("getMessage", data);
     }
   });
 
   socket.on("typingMessage", (data) => {
-    const user = findUser(data.recieverId);
+    const user = findUser(data?.recieverId);
     if (user !== undefined) {
       socket.to(user.socketId).emit("typingMessageGet", {
         senderId: data.senderId,
