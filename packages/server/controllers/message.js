@@ -32,23 +32,73 @@ exports.getMessage = async (req, res, next) => {
 
     const messages = await message.find({
       $or: [
-        { $and: [{ senderId: myId }, { receiverId: fId }] },
-        { $and: [{ senderId: fId }, { receiverId: myId }] },
+        {
+          $and: [
+            {
+              senderId: {
+                $eq: myId,
+              },
+            },
+            {
+              recieverId: {
+                $eq: fId,
+              },
+            },
+          ],
+        },
+
+        {
+          $and: [
+            {
+              senderId: {
+                $eq: fId,
+              },
+            },
+            { recieverId: { $eq: myId } },
+          ],
+        },
       ],
     });
-
-    // const filterChat = messages.filter((msg) => {
-
-    //   return (
-    //     (msg.senderId === myId && msg.recieverId === fId) ||
-    //     (msg.recieverId === myId && msg.senderId === fId)
-    //   );
-    // });
 
     res.status(200).json(messages);
   } catch (error) {
     res.status(400).json({ success: false });
     console.log(error);
   }
-  // res.status(200).json({success:true,msg:'Show all appointments'});
+};
+
+exports.getLastMessage = async (myId, fId) => {
+  const msg = await message
+    .find({
+      $or: [
+        {
+          $and: [
+            {
+              senderId: {
+                $eq: myId,
+              },
+            },
+            {
+              recieverId: {
+                $eq: fId,
+              },
+            },
+          ],
+        },
+
+        {
+          $and: [
+            {
+              senderId: {
+                $eq: fId,
+              },
+            },
+            { recieverId: { $eq: myId } },
+          ],
+        },
+      ],
+    })
+    .sort({ updatedAt: -1 });
+
+  return msg[0];
 };

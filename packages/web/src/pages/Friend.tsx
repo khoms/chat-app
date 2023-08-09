@@ -32,9 +32,14 @@ const Header = () => {
   );
 };
 
+interface FriendListType {
+  fndInfo: User;
+  msgInfo: Message;
+}
+
 const FriendList = () => {
   const { user, currentToken } = useCurrentUser();
-  const [FriendsList, setFriendsList] = useState<User[]>([]);
+  const [friendsList, setFriendsList] = useState<FriendListType[]>([]);
   const [socketMessage, setSocketMessage] = useState<Message>();
   const [selectedFriend, setSelectedFriend] = useState<User | null>(null);
   const [activeUser, setActiveUser] = useState([]);
@@ -43,11 +48,13 @@ const FriendList = () => {
 
   const socketRef = useRef<React.MutableRefObject<Socket>>();
 
+  console.log(friendsList);
+
   useEffect(() => {
     const fetchData = async () => {
       // setLoading(true);
       // try {
-      axios(`http://localhost:3000/api/user`, {
+      axios(`http://localhost:3000/api/user/fm`, {
         headers: {
           Authorization: `Bearer ${currentToken}`,
         },
@@ -57,8 +64,8 @@ const FriendList = () => {
   }, []);
 
   useEffect(() => {
-    setSelectedFriend(FriendsList[0]);
-  }, [FriendsList]);
+    setSelectedFriend(friendsList[0]?.fndInfo);
+  }, [friendsList]);
 
   useEffect(() => {
     socketRef.current = io("ws://localhost:8000");
@@ -105,7 +112,7 @@ const FriendList = () => {
     });
   }, []);
 
-  if (!user || !FriendList) {
+  if (!user || !friendsList) {
     return null;
   }
   return (
@@ -143,18 +150,29 @@ const FriendList = () => {
         />
 
         {/* Friend List */}
-        {FriendsList?.map((friend, index) => (
+        {friendsList?.map((friend, index) => (
           <div
-            key={friend._id}
-            onClick={() => setSelectedFriend(friend)}
+            key={friend.fndInfo._id}
+            onClick={() => setSelectedFriend(friend?.fndInfo)}
             className={`flex gap-4 items-center p-2 hover:bg-blue-50 rounded-lg ${
-              selectedFriend === friend ? "bg-blue-100" : ""
+              selectedFriend === friend.fndInfo ? "bg-blue-100" : ""
             }`}
           >
-            <img src={friend.image} className=" h-14 w-14 rounded-full" />
-            <div className="flex flex-col gap-1">
-              <div className="font-bold">{friend.name}</div>
-              <div className="">Friends message</div>
+            <img
+              src={friend?.fndInfo?.image}
+              className=" h-14 w-14 rounded-full"
+            />
+            <div className="flex flex-col gap-1 flex-1">
+              <div className="font-bold">{friend?.fndInfo.name}</div>
+              <div className="flex justify-between items-center">
+                <div className="">
+                  {friend.msgInfo.senderId == user._id
+                    ? "You"
+                    : selectedFriend?.name.split(" ")[0]}
+                  : {friend.msgInfo.message.text.slice(0, 16)}
+                </div>
+                <div className="bg-[#0084FF] h-3 w-3 rounded-full"></div>
+              </div>
             </div>
           </div>
         ))}

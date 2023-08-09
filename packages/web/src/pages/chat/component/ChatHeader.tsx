@@ -1,4 +1,7 @@
+import { FiPhoneCall } from "react-icons/fi";
 import ActiveIcon from "../../component/ActiveIcon";
+import { IoMdVideocam } from "react-icons/io";
+import { BsInfoCircle } from "react-icons/bs";
 
 const ChatHeader = ({
   image,
@@ -18,11 +21,10 @@ const ChatHeader = ({
         </div>
         <div className="font-bold text-lg">{name}</div>
       </div>
-      <div className="flex gap-2 items-center">
-        <div className="p-4 bg-gray-300 rounded-full"></div>
-        <div className="p-4 bg-gray-300 rounded-full"></div>
-
-        <div className="p-4 bg-gray-300 rounded-full"></div>
+      <div className="flex gap-4 items-center  mr-2 ">
+        <FiPhoneCall />
+        <IoMdVideocam />
+        <BsInfoCircle />
       </div>
     </div>
   );
