@@ -1,7 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import Chat from "./chat/Chat";
 import useCurrentUser from "../hooks/useCurrentUser";
-import { User, useAppDispatch, useAppSelector } from "../types/User";
+import {
+  FriendListType,
+  User,
+  useAppDispatch,
+  useAppSelector,
+} from "../types/User";
 import axios from "axios";
 import { Socket, io } from "socket.io-client";
 import ActiveUserList from "./component/ActiveUserList";
@@ -12,6 +17,7 @@ import { BsThreeDots } from "react-icons/bs";
 
 import { FiEdit } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
+import getFriendsAsync from "../store/friend/method/getFriends";
 
 const Header = () => {
   return (
@@ -32,16 +38,11 @@ const Header = () => {
   );
 };
 
-interface FriendListType {
-  fndInfo: User;
-  msgInfo: Message;
-}
-
 const FriendList = () => {
   const { user, currentToken } = useCurrentUser();
   const [friendsList, setFriendsList] = useState<FriendListType[]>([]);
   const [socketMessage, setSocketMessage] = useState<Message>();
-  const [selectedFriend, setSelectedFriend] = useState<User | null>(null);
+  const [selectedFriend, setSelectedFriend] = useState<User>();
   const [activeUser, setActiveUser] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const dispatch = useAppDispatch();
@@ -50,32 +51,43 @@ const FriendList = () => {
     (state) => state.message
   );
 
+  const {
+    entities: fEntities,
+    ids: fIds,
+    loading: fLoading,
+  } = useAppSelector((state) => state.friend);
+
   const socketRef = useRef<React.MutableRefObject<Socket>>();
 
-  console.log(friendsList);
+  // console.log(friendsList);
 
   useEffect(() => {
-    const fetchData = async () => {
-      // setLoading(true);
-      // try {
-      axios(`http://localhost:3000/api/user/fm`, {
-        headers: {
-          Authorization: `Bearer ${currentToken}`,
-        },
-      }).then((res) => setFriendsList(res.data.data));
-    };
-    fetchData();
-  }, []);
+    dispatch(getFriendsAsync());
+    // const fetchData = async () => {
+    //   axios(`http://localhost:3000/api/user/fm`, {
+    //     headers: {
+    //       Authorization: `Bearer ${currentToken}`,
+    //     },
+    //   }).then((res) => setFriendsList(res.data.data));
+
+    //   console.log("inside useEffect");
+    // };
+    // fetchData();
+  }, [dispatch]);
 
   useEffect(() => {
-    setSelectedFriend(friendsList[0]?.fndInfo);
-  }, [friendsList]);
+    if (fEntities !== undefined) {
+      const firstId = fIds[0];
+      setSelectedFriend(fEntities[firstId]?.fndInfo);
+    }
+  }, [fEntities]);
 
   useEffect(() => {
     socketRef.current = io("ws://localhost:8000");
     socketRef.current.on("getMessage", (data: Message) => {
       console.log(data, "SocketMessage check");
       setSocketMessage(data);
+      dispatch(getFriendsAsync());
     });
 
     socketRef.current.on("typingMessageGet", (data) => {
@@ -120,12 +132,11 @@ const FriendList = () => {
   useEffect(() => {
     socketRef.current.on("getUser", (users) => {
       const filterUser = users.filter((u) => u.userId !== user?._id.toString());
-      console.log(filterUser, "filterUser");
       setActiveUser(filterUser);
     });
   }, []);
 
-  if (!user || !friendsList) {
+  if (!user || !fEntities) {
     return null;
   }
   return (
@@ -163,34 +174,39 @@ const FriendList = () => {
         />
 
         {/* Friend List */}
-        {friendsList?.map((friend, index) => (
-          <div
-            key={friend.fndInfo._id}
-            onClick={() => setSelectedFriend(friend?.fndInfo)}
-            className={`flex gap-4 items-center p-2 hover:bg-blue-50 rounded-lg ${
-              selectedFriend === friend.fndInfo ? "bg-blue-100" : ""
-            }`}
-          >
-            <img
-              src={friend?.fndInfo?.image}
-              className=" h-14 w-14 rounded-full"
-            />
-            <div className="flex flex-col gap-1 flex-1">
-              <div className="font-bold">{friend?.fndInfo.name}</div>
-              <div className="flex justify-between items-center">
-                <div className="">
-                  {friend.msgInfo.senderId == user._id
-                    ? "You"
-                    : selectedFriend?.name.split(" ")[0]}
-                  : {friend.msgInfo.message.text.slice(0, 16)}
+
+        {fIds?.map((fId, index) => {
+          const friend = fEntities[fId];
+
+          return (
+            <div
+              key={friend?.fndInfo._id}
+              onClick={() => setSelectedFriend(friend?.fndInfo)}
+              className={`flex gap-4 items-center p-2 hover:bg-blue-50 rounded-lg ${
+                selectedFriend === friend?.fndInfo ? "bg-blue-100" : ""
+              }`}
+            >
+              <img
+                src={friend?.fndInfo?.image}
+                className=" h-14 w-14 rounded-full"
+              />
+              <div className="flex flex-col gap-1 flex-1">
+                <div className="font-bold">{friend?.fndInfo.name}</div>
+                <div className="flex justify-between items-center">
+                  <div className="">
+                    {friend?.msgInfo.senderId == user._id
+                      ? "You"
+                      : selectedFriend?.name.split(" ")[0]}
+                    : {friend?.msgInfo.message.text.slice(0, 16)}
+                  </div>
+                  {friend?.msgInfo.status !== "unseen" && (
+                    <div className="bg-[#0084FF] h-3 w-3 rounded-full"></div>
+                  )}
                 </div>
-                {friend.msgInfo.status !== "unseen" && (
-                  <div className="bg-[#0084FF] h-3 w-3 rounded-full"></div>
-                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {selectedFriend ? (
         <Chat

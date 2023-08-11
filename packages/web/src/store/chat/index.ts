@@ -24,7 +24,7 @@ const message = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(createMessageAsync.fulfilled, (state, { payload }) => {
-      messageAdapter.setOne(state, payload);
+      messageAdapter.upsertOne(state, payload);
       state.loading = false;
       state.messageSendSuccess = true;
     });
@@ -37,7 +37,7 @@ const message = createSlice({
 
     builder.addCase(createMessageAsync.pending, (state, { meta }) => {
       state.status[meta.requestId] = "working";
-      state.loading = true;
+      state.loading = false;
       state.messageSendSuccess = false;
     });
 

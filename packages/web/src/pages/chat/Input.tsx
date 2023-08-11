@@ -7,6 +7,7 @@ import createUniqueId from "../../utils/createUid";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { Socket } from "socket.io-client";
 import { IoMdSend } from "react-icons/io";
+import getFriendsAsync from "../../store/friend/method/getFriends";
 
 const MessageInput = ({
   setMessage,
@@ -31,6 +32,7 @@ const MessageInput = ({
     };
 
     await dispatch(createMessageAsync(sendData));
+    await dispatch(getFriendsAsync());
 
     // socketRef.current.emit("sendMessage", {
     //   ...sendData,

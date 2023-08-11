@@ -1,5 +1,6 @@
 import { useSelector, TypedUseSelectorHook, useDispatch } from "react-redux";
 import store from "../store";
+import { Message } from "./Message";
 
 export interface User {
   name: string;
@@ -10,6 +11,11 @@ export interface User {
 export interface LoginCred {
   email: string;
   password: string;
+}
+
+export interface FriendListType {
+  fndInfo: User;
+  msgInfo: Message;
 }
 
 export type RootState = ReturnType<typeof store.getState>;
