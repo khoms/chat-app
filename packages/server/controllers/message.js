@@ -100,3 +100,24 @@ exports.getLastMessage = async (myId, fId) => {
 
   return msg[0];
 };
+
+
+// Route Seen Message
+
+exports.seenMessage =async(req,res)=>{
+  const messageId = req.body._id;
+
+  try{
+    await Message.findByIdAndUpdate(messageId,{
+      status:'seen'
+    }).then(()=>{
+      res.status(200).json({
+        success:true
+      })
+    })
+  }catch(err){
+    res.status(500).json({
+      error:"Internal server error"
+    })
+  }
+}
