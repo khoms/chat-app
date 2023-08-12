@@ -3,6 +3,7 @@ import { Message } from "../../types/Message";
 import createMessageAsync from "./methods/createMessage";
 import getMessageAsync from "./methods/getMessage";
 import addMessageAsync from "./methods/addMessage";
+import updateMessageSeen from "./methods/seenMessage";
 
 const messageAdapter = createEntityAdapter<Message>({
   selectId: (message) => message._id,
@@ -70,6 +71,15 @@ const message = createSlice({
     builder.addCase(getMessageAsync.pending, (state, { meta }) => {
       state.status[meta.requestId] = "working";
       state.loading = true;
+    });
+
+    builder.addCase(updateMessageSeen.fulfilled, (state, { payload, meta }) => {
+      const existing = state.entities[payload.id];
+      if (existing) {
+        messageAdapter.upsertOne(state, { ...existing, ...payload });
+      }
+      Reflect.deleteProperty(state.status, meta.requestId);
+      state.loading = false;
     });
   },
 });

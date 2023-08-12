@@ -1,14 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import axios from "axios";
-import { useAppSelector } from "../../../types/User";
 
 const getFriendsAsync = createAsyncThunk("friend/get", async () => {
   const currentToken = localStorage.getItem("token");
 
   // const { entities, ids } = useAppSelector((state) => state.message);
-
-  console.log("here we are");
 
   try {
     const res = await axios(`http://localhost:3000/api/user/fm`, {

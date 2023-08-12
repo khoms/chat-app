@@ -1,6 +1,7 @@
 import { ChangeEvent } from "react";
 import { User, useAppDispatch } from "../../types/User";
 import createMessageAsync from "../../store/chat/methods/createMessage";
+
 import { Message } from "../../types/Message";
 import createUniqueId from "../../utils/createUid";
 
@@ -32,6 +33,7 @@ const MessageInput = ({
     };
 
     await dispatch(createMessageAsync(sendData));
+    //Inplace of updating the friendlist we need to update the last message of specific friend with the last message
     await dispatch(getFriendsAsync());
 
     // socketRef.current.emit("sendMessage", {

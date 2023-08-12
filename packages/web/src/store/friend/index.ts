@@ -1,6 +1,7 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { FriendListType, User } from "../../types/User";
 import getFriendsAsync from "./method/getFriends";
+import getFriendWithMsgAsync from "./method/getSingleFriendWithMessage";
 
 const friendAdpater = createEntityAdapter<FriendListType>({
   selectId: (friend) => friend.fndInfo._id,
@@ -34,6 +35,15 @@ const friend = createSlice({
       state.status[meta.requestId] = "working";
       state.loading = true;
     });
+
+    builder.addCase(
+      getFriendWithMsgAsync.fulfilled,
+      (state, { meta, payload }) => {
+        friendAdpater.upsertOne(state, payload);
+        Reflect.deleteProperty(state.status, meta.requestId);
+        state.loading = false;
+      }
+    );
   },
 });
 

@@ -82,28 +82,42 @@ const Chat = ({
           </div>
         ) : (
           <div className="w-full h-[75vh] overflow-scroll flex-col items-center justify-center m-2">
-            {ids.map((id) => {
+            {ids.map((id, index) => {
               const message = entities[id];
               const isSender = Boolean(user?._id === message?.senderId);
 
               return (
                 <div key={id}>
                   {isSender ? (
-                    <div
-                      ref={scrollRef}
-                      className="w-full  flex gap-1 flex-row-reverse p-1 my-1 text-white "
-                      key={id}
-                    >
-                      <div className="flex items-center mt-4">
-                        <div className="w-6 h-6 bg-[#0084FF] rounded-full"></div>
+                    <>
+                      {" "}
+                      <div
+                        ref={scrollRef}
+                        className="w-full  flex gap-1 flex-row-reverse p-1 my-1 text-white "
+                        key={id}
+                      >
+                        <div
+                          className=" min-w-[60px]
+                    bg-[#0084FF] px-4 py-3 rounded-full"
+                        >
+                          {message?.message.text}
+                        </div>
                       </div>
                       <div
-                        className=" min-w-[60px] flex justify-center
-                    bg-[#0084FF] px-4 py-3 rounded-full"
+                        className={`flex justify-end items-end ${
+                          index == ids.length - 1 ? "visible" : "hidden"
+                        }`}
                       >
-                        {message?.message.text}
+                        {message?.status == "seen" ? (
+                          <img
+                            src={selectedFriend.image}
+                            className="w-5 h-5 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-5 h-5 bg-[#0084FF] rounded-full"></div>
+                        )}
                       </div>
-                    </div>
+                    </>
                   ) : (
                     <FriendSideMessage
                       key={id}

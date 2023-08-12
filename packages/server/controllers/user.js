@@ -78,3 +78,32 @@ exports.getFriendsWithLastMessage = async (req, res, next) => {
   }
 };
 
+
+// Routes to get friend with last msg
+
+exports.getFriendWithLastMessage = async (req, res, next) => {
+  const currentUser = req.user._id;
+  let fnd_msg = {};
+
+  try {
+    const friend = await User.findById(req.params.id);
+    
+    if (!friend) {
+      return next(new ErrorResponse("User not found."));
+    }
+
+      let lmsg = await getLastMessage(
+        currentUser.toString(),
+        friend._id.toString()
+      );
+      fnd_msg =
+        {
+          fndInfo: friend,
+          msgInfo: lmsg,
+        },
+
+    res.status(200).json({ success: true, data: fnd_msg });
+  } catch (err) {
+    next(err);
+  }
+};

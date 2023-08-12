@@ -18,6 +18,8 @@ import { BsThreeDots } from "react-icons/bs";
 import { FiEdit } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
 import getFriendsAsync from "../store/friend/method/getFriends";
+import updateMessageSeen from "../store/chat/methods/seenMessage";
+import getFriendWithMsgAsync from "../store/friend/method/getSingleFriendWithMessage";
 
 const Header = () => {
   return (
@@ -59,7 +61,7 @@ const FriendList = () => {
 
   const socketRef = useRef<React.MutableRefObject<Socket>>();
 
-  // console.log(friendsList);
+  console.log(selectedFriend, "SelectedFriend");
 
   useEffect(() => {
     dispatch(getFriendsAsync());
@@ -80,12 +82,11 @@ const FriendList = () => {
       const firstId = fIds[0];
       setSelectedFriend(fEntities[firstId]?.fndInfo);
     }
-  }, [fEntities]);
+  }, []);
 
   useEffect(() => {
     socketRef.current = io("ws://localhost:8000");
     socketRef.current.on("getMessage", (data: Message) => {
-      console.log(data, "SocketMessage check");
       setSocketMessage(data);
       dispatch(getFriendsAsync());
     });
@@ -93,11 +94,19 @@ const FriendList = () => {
     socketRef.current.on("typingMessageGet", (data) => {
       setIsTyping(Boolean(data.message));
     });
+
+    socketRef?.current?.on("messageSeenResponse", (msg) => {
+      dispatch(updateMessageSeen(msg));
+      dispatch(getFriendWithMsgAsync(msg.recieverId));
+
+      console.log("Seen response");
+    });
   }, []);
 
   useEffect(() => {
     if (messageSendSuccess) {
-      socketRef.current.emit("sendMessage", entities[ids[ids.length - 1]]);
+      const lastMessage = entities[ids[ids.length - 1]] ?? {};
+      socketRef.current.emit("sendMessage", lastMessage);
     }
   }, [messageSendSuccess]);
 
@@ -108,6 +117,10 @@ const FriendList = () => {
         socketMessage.recieverId === user?._id
       ) {
         dispatch(addMessageAsync(socketMessage));
+
+        dispatch(updateMessageSeen(socketMessage));
+
+        socketRef.current.emit("messageSeen", socketMessage);
       }
     }
   }, [socketMessage]);
@@ -139,6 +152,19 @@ const FriendList = () => {
   if (!user || !fEntities) {
     return null;
   }
+
+  const selectFriendHandler = (friend: FriendListType) => {
+    setSelectedFriend(friend?.fndInfo);
+    if (
+      friend?.msgInfo.status == "unseen" &&
+      friend.msgInfo.recieverId == user._id
+    ) {
+      dispatch(updateMessageSeen(friend.msgInfo));
+      dispatch(getFriendWithMsgAsync(friend.fndInfo._id));
+
+      socketRef.current.emit("messageSeen", friend.msgInfo);
+    }
+  };
   return (
     <div className="flex flex-1 gap-2 ">
       <Toaster
@@ -177,13 +203,16 @@ const FriendList = () => {
 
         {fIds?.map((fId, index) => {
           const friend = fEntities[fId];
+          if (!friend) {
+            return;
+          }
 
           return (
             <div
               key={friend?.fndInfo._id}
-              onClick={() => setSelectedFriend(friend?.fndInfo)}
+              onClick={() => friend && selectFriendHandler(friend)}
               className={`flex gap-4 items-center p-2 hover:bg-blue-50 rounded-lg ${
-                selectedFriend === friend?.fndInfo ? "bg-blue-100" : ""
+                selectedFriend?._id === fId ? "bg-blue-100" : ""
               }`}
             >
               <img
@@ -196,11 +225,20 @@ const FriendList = () => {
                   <div className="">
                     {friend?.msgInfo.senderId == user._id
                       ? "You"
-                      : selectedFriend?.name.split(" ")[0]}
+                      : friend?.fndInfo.name.split(" ")[0]}
                     : {friend?.msgInfo.message.text.slice(0, 16)}
                   </div>
-                  {friend?.msgInfo.status !== "unseen" && (
+                  {friend?.msgInfo.status == "seen" &&
+                  friend.msgInfo.senderId == user._id ? (
+                    <img
+                      src={friend.fndInfo.image}
+                      className="h-3 w-3 rounded-full"
+                    />
+                  ) : friend?.msgInfo.status == "unseen" &&
+                    friend.msgInfo.recieverId == user._id ? (
                     <div className="bg-[#0084FF] h-3 w-3 rounded-full"></div>
+                  ) : (
+                    ""
                   )}
                 </div>
               </div>
