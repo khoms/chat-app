@@ -1,22 +1,18 @@
 import { createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { User } from "../../types/User";
 import loginAsync from "./methods/login";
+import fetchProfileAsync from "./methods/fetchProfileAsync";
 
 const authAdapter = createEntityAdapter<User>({
   selectId: (user) => user._id,
 });
 
-const userToken = localStorage.getItem("token");
-const userData = localStorage.getItem("currentUser");
-
 const authInitialState = authAdapter.getInitialState<{
-  userToken: string;
-  userData: string;
   status: Record<string, "working" | undefined>;
 }>({
   status: {},
-  userToken: userToken ?? "",
-  userData: userData ?? "",
+  // userToken: localStorage.getItem("token") ?? "",
+  // userData: localStorage.getItem("currentUser") ?? "",
 });
 
 const auth = createSlice({
@@ -37,6 +33,19 @@ const auth = createSlice({
     });
 
     builder.addCase(loginAsync.pending, (state, { meta }) => {
+      state.status[meta.requestId] = "working";
+    });
+
+    builder.addCase(fetchProfileAsync.fulfilled, (state, { meta, payload }) => {
+      authAdapter.upsertOne(state, payload);
+      Reflect.deleteProperty(state.status, meta.requestId);
+    });
+
+    builder.addCase(fetchProfileAsync.rejected, (state, { meta, error }) => {
+      Reflect.deleteProperty(state.status, meta.requestId);
+    });
+
+    builder.addCase(fetchProfileAsync.pending, (state, { meta }) => {
       state.status[meta.requestId] = "working";
     });
   },
