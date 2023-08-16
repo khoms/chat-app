@@ -1,7 +1,7 @@
 import jwtDecode from "jwt-decode";
-import { User, useAppSelector } from "../types/User";
-import { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import { User, useAppDispatch, useAppSelector } from "../types/User";
+import { useRef, useEffect, useMemo } from "react";
+import fetchProfileAsync from "../store/auth/methods/fetchProfileAsync";
 
 interface DecodedToken {
   id: string;
@@ -16,36 +16,28 @@ const decryptToken = (token: string | null) => {
 };
 
 const useCurrentUser = () => {
-  const [user, setUser] = useState<User>();
-  const [loading, setLoading] = useState(true);
+  const { entities, ids, status } = useAppSelector((state) => state.auth);
+  const reqId = useRef("");
+  const loading = status[reqId.current] === "working";
+
+  const dispatch = useAppDispatch();
+  const user = entities[ids[0]];
 
   const currentToken = localStorage.getItem("token");
 
-  // const { entities, ids } = useAppSelector((state) => state.auth);
   const userId = useMemo(() => {
     return decryptToken(currentToken);
   }, [currentToken]);
 
   useEffect(() => {
     if (!userId) {
-      setLoading(false);
       return;
     }
-    const fetchData = async () => {
-      // setLoading(true);
-      // try {
-      axios(`http://localhost:3000/api/user/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${currentToken}`,
-        },
-      })
-        .then((res) => setUser(res.data.data))
-        .finally(() => setLoading(false));
-    };
-    fetchData();
+
+    const req = dispatch(fetchProfileAsync({ id: userId }));
+    reqId.current = req.requestId;
   }, [userId]);
 
-  // const user = entities[ids[0]];
   return { user, userId, currentToken, loading };
 };
 

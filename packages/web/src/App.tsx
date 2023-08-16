@@ -6,6 +6,8 @@ import AuthRoute from "./navigation/AuthRoute";
 
 const Main = () => {
   const { user, userId, loading } = useCurrentUser();
+
+  console.log(loading);
   if (loading) {
     return <div className="flex justify-center items-center">Loading....</div>;
   }
