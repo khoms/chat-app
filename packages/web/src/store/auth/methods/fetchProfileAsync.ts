@@ -2,20 +2,16 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import axios from "axios";
 
-const getFriendWithMsgAsync = createAsyncThunk(
-  "friend/getSingle",
-  async (id: String) => {
+const fetchProfileAsync = createAsyncThunk(
+  "auth/fetchprofile",
+  async ({ id }: { id: string }) => {
     const currentToken = localStorage.getItem("token");
-
-    console.log("Inside updating the f List");
     try {
-      const res = await axios(`http://localhost:3000/api/user/fm/${id}`, {
+      const res = await axios(`http://localhost:3000/api/user/${id}`, {
         headers: {
           Authorization: `Bearer ${currentToken}`,
         },
       });
-
-      // res.data.data.msgInfo = entities[ids[ids.length - 1]];
       return res.data.data;
     } catch (err) {
       return err;
@@ -24,4 +20,4 @@ const getFriendWithMsgAsync = createAsyncThunk(
   }
 );
 
-export default getFriendWithMsgAsync;
+export default fetchProfileAsync;

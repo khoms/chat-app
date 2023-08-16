@@ -9,6 +9,7 @@ const loginAsync = createAsyncThunk("auth/login", async (user: LoginCred) => {
   localStorage.setItem("token", data.token);
   localStorage.setItem("currentUser", data.user);
   // return { user: data.user, tokken: data.token };
+
   return data.user;
 });
 

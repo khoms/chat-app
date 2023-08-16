@@ -19,7 +19,7 @@ const MessageInput = ({
   setMessage: React.Dispatch<React.SetStateAction<string>>;
   messageText: string;
   fId: string;
-  socketRef: React.MutableRefObject<Socket>;
+  socketRef: Socket;
   selectedFriend: User;
 }) => {
   const { user } = useCurrentUser();
@@ -43,7 +43,7 @@ const MessageInput = ({
     // });
     setMessage("");
 
-    socketRef.current.emit("typingMessage", {
+    socketRef.current?.emit("typingMessage", {
       senderId: user?._id,
       recieverId: fId,
       message: "",

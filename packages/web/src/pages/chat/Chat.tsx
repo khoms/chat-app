@@ -39,7 +39,7 @@ const Chat = ({
 }: {
   selectedFriend: User;
   activeUser: ActiveUser[];
-  socketRef: React.MutableRefObject<Socket>;
+  socketRef: Socket;
   isTyping: Boolean;
 }) => {
   const [message, setMessage] = useState<string>("");
@@ -64,7 +64,6 @@ const Chat = ({
   useEffect(() => {
     scrollRef?.current?.scrollIntoView({ behavior: "auto" });
   }, [entities]);
-
 
   return (
     <div className=" py-8 flex-1 flex flex-col justify-between overflow-y-scroll">

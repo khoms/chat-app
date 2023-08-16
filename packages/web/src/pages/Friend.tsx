@@ -7,7 +7,6 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "../types/User";
-import axios from "axios";
 import { Socket, io } from "socket.io-client";
 import ActiveUserList from "./component/ActiveUserList";
 import { Message } from "../types/Message";
@@ -41,12 +40,12 @@ const Header = () => {
 };
 
 const FriendList = () => {
-  const { user, currentToken } = useCurrentUser();
-  const [friendsList, setFriendsList] = useState<FriendListType[]>([]);
+  const { user } = useCurrentUser();
   const [socketMessage, setSocketMessage] = useState<Message>();
   const [selectedFriend, setSelectedFriend] = useState<User>();
   const [activeUser, setActiveUser] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const dispatch = useAppDispatch();
 
   const { entities, messageSendSuccess, ids } = useAppSelector(
@@ -59,23 +58,27 @@ const FriendList = () => {
     loading: fLoading,
   } = useAppSelector((state) => state.friend);
 
-  const socketRef = useRef<React.MutableRefObject<Socket>>();
+  const socketRef = useRef<Socket>();
 
   console.log(selectedFriend, "SelectedFriend");
 
   useEffect(() => {
     dispatch(getFriendsAsync());
-    // const fetchData = async () => {
-    //   axios(`http://localhost:3000/api/user/fm`, {
-    //     headers: {
-    //       Authorization: `Bearer ${currentToken}`,
-    //     },
-    //   }).then((res) => setFriendsList(res.data.data));
-
-    //   console.log("inside useEffect");
-    // };
-    // fetchData();
   }, [dispatch]);
+
+  useEffect(() => {
+    let count = 0;
+    fIds.map((fd) => {
+      const fdUser = fEntities[fd];
+      if (
+        fdUser?.msgInfo.recieverId == user?._id &&
+        fdUser?.msgInfo.status == "unseen"
+      ) {
+        ++count;
+      }
+      setUnreadCount(count);
+    });
+  }, [fEntities]);
 
   useEffect(() => {
     if (fEntities !== undefined) {
@@ -106,7 +109,7 @@ const FriendList = () => {
   useEffect(() => {
     if (messageSendSuccess) {
       const lastMessage = entities[ids[ids.length - 1]] ?? {};
-      socketRef.current.emit("sendMessage", lastMessage);
+      socketRef?.current?.emit("sendMessage", lastMessage);
     }
   }, [messageSendSuccess]);
 
@@ -120,7 +123,7 @@ const FriendList = () => {
 
         dispatch(updateMessageSeen(socketMessage));
 
-        socketRef.current.emit("messageSeen", socketMessage);
+        socketRef?.current?.emit("messageSeen", socketMessage);
       }
     }
   }, [socketMessage]);
@@ -139,11 +142,11 @@ const FriendList = () => {
   }, [socketMessage]);
 
   useEffect(() => {
-    socketRef.current.emit("adduser", user?._id, user);
+    socketRef?.current?.emit("adduser", user?._id, user);
   }, [user]);
 
   useEffect(() => {
-    socketRef.current.on("getUser", (users) => {
+    socketRef?.current?.on("getUser", (users) => {
       const filterUser = users.filter((u) => u.userId !== user?._id.toString());
       setActiveUser(filterUser);
     });
@@ -162,7 +165,7 @@ const FriendList = () => {
       dispatch(updateMessageSeen(friend.msgInfo));
       dispatch(getFriendWithMsgAsync(friend.fndInfo._id));
 
-      socketRef.current.emit("messageSeen", friend.msgInfo);
+      socketRef?.current?.emit("messageSeen", friend.msgInfo);
     }
   };
   return (
@@ -255,7 +258,9 @@ const FriendList = () => {
         />
       ) : (
         <div className="flex-1 flex justify-center items-center">
-          {`Hello ${user.name}  Please select any one friend`}
+          {`Hello ${user.name} ,You have ${unreadCount} unread message${
+            unreadCount > 1 ? "s" : ""
+          }. Please select any one friend.`}
         </div>
       )}
     </div>
